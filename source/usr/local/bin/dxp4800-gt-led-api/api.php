@@ -10,7 +10,8 @@ if (!$socket) {
 while (true) {
     $conn = @stream_socket_accept($socket, -1);
     if ($conn) {
-        $input = fgets($conn, 4096);
+        stream_set_timeout($conn, 1);
+        $input = fread($conn, 4096);
         fclose($conn);
         
         if (empty(trim($input))) continue;
