@@ -2,10 +2,10 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dxp4800-gt-leds">
 <!ENTITY author    "TheMysticle">
-<!ENTITY version   "2026.08.20">
+<!ENTITY version   "2026.08.21">
 <!ENTITY launch    "Settings/dxp4800-gt-leds">
-<!ENTITY pluginURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/main/dxp4800-gt-leds.plg">
-<!ENTITY sourceURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/main/source">
+<!ENTITY pluginURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/master/dxp4800-gt-leds.plg">
+<!ENTITY sourceURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/master/source">
 ]>
 
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0">
@@ -36,6 +36,18 @@ mkdir -p /etc/rc.d
 <URL>&sourceURL;/usr/local/bin/dxp4800-gt-led-monitor</URL>
 </FILE>
 
+<!-- API DAEMON DIRECTORY -->
+<FILE Run="/bin/bash">
+<INLINE>
+mkdir -p /usr/local/bin/dxp4800-gt-led-api
+</INLINE>
+</FILE>
+
+<!-- API SCRIPT -->
+<FILE Name="/usr/local/bin/dxp4800-gt-led-api/index.php" Mode="0644">
+<URL>&sourceURL;/usr/local/bin/dxp4800-gt-led-api/index.php</URL>
+</FILE>
+
 <!-- INIT SCRIPT -->
 <FILE Name="/etc/rc.d/rc.&name;" Mode="0755">
 <URL>&sourceURL;/etc/rc.d/rc.&name;</URL>
@@ -56,7 +68,9 @@ echo "Installation complete!"
 echo "Stopping &name; daemon..."
 /etc/rc.d/rc.&name; stop
 rm -rf /usr/local/emhttp/plugins/&name;
-rm -f /usr/local/bin/&name;-monitor
+rm -rf /boot/config/plugins/&name;
+rm -rf /usr/local/bin/dxp4800-gt-led-api
+rm -f /usr/local/bin/dxp4800-gt-led-monitor
 rm -f /etc/rc.d/rc.&name;
 echo "Plugin removed."
 </INLINE>

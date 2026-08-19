@@ -9,6 +9,12 @@ if (!is_dir($cfgDir)) {
 }
 
 $cfgDefaults = array(
+  'MASTER_LED_SWITCH' => '1',
+  'SCHEDULE_ENABLE' => '0',
+  'SCHEDULE_START_TIME' => '08:00',
+  'SCHEDULE_END_TIME' => '22:00',
+  'HA_API_ENABLE' => '0',
+  'HA_API_PORT' => '8088',
   'NETWORK_INTERFACE' => 'eth0',
   'DISK_LED_INVERT' => '1',
   'COLOR_DISK_HEALTH' => '255 255 255',
@@ -37,7 +43,9 @@ $cfg = array_merge($cfgDefaults, $cfg);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['apply'])) {
         $new = $cfg;
-        $fields = array('NETWORK_INTERFACE', 'DISK_LED_INVERT', 'COLOR_DISK_HEALTH', 'BRIGHTNESS_DISK_LEDS',
+        $fields = array('MASTER_LED_SWITCH', 'SCHEDULE_ENABLE', 'SCHEDULE_START_TIME', 'SCHEDULE_END_TIME',
+                        'HA_API_ENABLE', 'HA_API_PORT', 'NETWORK_INTERFACE', 'DISK_LED_INVERT', 
+                        'COLOR_DISK_HEALTH', 'BRIGHTNESS_DISK_LEDS',
                         'POWER_LED_MODE', 'POWER_LED_COLOR', 'NETDEV_LED_MODE', 'NETDEV_LED_COLOR',
                         'BAY_DISK1_MODE', 'BAY_DISK1_COLOR', 'BAY_DISK2_MODE', 'BAY_DISK2_COLOR',
                         'BAY_DISK3_MODE', 'BAY_DISK3_COLOR', 'BAY_DISK4_MODE', 'BAY_DISK4_COLOR');
@@ -52,6 +60,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         file_put_contents($cfgFile, $out);
         touch('/var/run/dxp4800-gt-leds-reload');
+        
+        // Also restart the rc script so the API daemon can spin up/down if toggled
+        exec("/etc/rc.d/rc.dxp4800-gt-leds restart > /dev/null 2>&1 &");
+        
         echo '<script>window.location.href = window.location.pathname + window.location.search;</script>';
         exit;
     }
@@ -180,15 +192,16 @@ if ( window.history.replaceState ) { window.history.replaceState( null, null, wi
     background: #333;
 }
 .settings-panel {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
+    background: rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 8px;
     padding: 20px;
     margin-top: 20px;
+    color: inherit;
 }
 .dark-mode .settings-panel {
-    background: #222;
-    border-color: #444;
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
 }
 .bay-settings {
     display: none;
@@ -203,6 +216,12 @@ if ( window.history.replaceState ) { window.history.replaceState( null, null, wi
 .active-element {
     border-color: #007bff !important;
     box-shadow: 0 0 0 2px #007bff;
+}
+.input-instructions {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
 }
 </style>
 
@@ -247,13 +266,64 @@ if ( window.history.replaceState ) { window.history.replaceState( null, null, wi
 </div>
 
 <div class="settings-panel">
-    <h3>Global Settings</h3>
+    <h3>Master Control & Schedule</h3>
+    
+    <dl>
+        <dt>Master Switch:</dt>
+        <dd>
+            <select name="MASTER_LED_SWITCH">
+                <option value="1" <?= $cfg['MASTER_LED_SWITCH'] == '1' ? 'selected' : '' ?>>ON (LEDs follow settings)</option>
+                <option value="0" <?= $cfg['MASTER_LED_SWITCH'] == '0' ? 'selected' : '' ?>>OFF (Force ALL LEDs off)</option>
+            </select>
+            <span class="input-instructions">Instantly turns off all LEDs across the entire NAS.</span>
+        </dd>
+    </dl>
+    
+    <dl>
+        <dt>Schedule:</dt>
+        <dd>
+            <select name="SCHEDULE_ENABLE" onchange="toggleSchedule(this.value)">
+                <option value="0" <?= $cfg['SCHEDULE_ENABLE'] == '0' ? 'selected' : '' ?>>Disabled</option>
+                <option value="1" <?= $cfg['SCHEDULE_ENABLE'] == '1' ? 'selected' : '' ?>>Enabled (Turn on during window)</option>
+            </select>
+        </dd>
+    </dl>
+    
+    <div id="schedule-times" style="display: <?= $cfg['SCHEDULE_ENABLE'] == '1' ? 'block' : 'none' ?>;">
+        <dl>
+            <dt>Turn ON At:</dt>
+            <dd><input type="time" name="SCHEDULE_START_TIME" value="<?= htmlspecialchars($cfg['SCHEDULE_START_TIME']) ?>"></dd>
+        </dl>
+        <dl>
+            <dt>Turn OFF At:</dt>
+            <dd><input type="time" name="SCHEDULE_END_TIME" value="<?= htmlspecialchars($cfg['SCHEDULE_END_TIME']) ?>"></dd>
+        </dl>
+    </div>
+
+    <h3 style="margin-top: 30px;">Home Assistant Local API</h3>
+    <dl>
+        <dt>Local API Server:</dt>
+        <dd>
+            <select name="HA_API_ENABLE">
+                <option value="0" <?= $cfg['HA_API_ENABLE'] == '0' ? 'selected' : '' ?>>Disabled</option>
+                <option value="1" <?= $cfg['HA_API_ENABLE'] == '1' ? 'selected' : '' ?>>Enabled</option>
+            </select>
+            <span class="input-instructions">Runs a tiny HTTP server allowing Home Assistant to send POST requests without Unraid authentication.</span>
+        </dd>
+    </dl>
+    <dl>
+        <dt>API Port:</dt>
+        <dd>
+            <input type="number" name="HA_API_PORT" value="<?= htmlspecialchars($cfg['HA_API_PORT']) ?>" style="width: 100px;">
+        </dd>
+    </dl>
+
+    <h3 style="margin-top: 30px;">Global LED Settings</h3>
     
     <dl>
         <dt>Network Interface:</dt>
         <dd>
             <input type="text" name="NETWORK_INTERFACE" value="<?= htmlspecialchars($cfg['NETWORK_INTERFACE']) ?>" placeholder="eth0 or br0">
-            <span class="input-instructions">The interface to monitor for the network LED.</span>
         </dd>
     </dl>
     
@@ -386,6 +456,10 @@ function updateBayVisuals(bayId) {
         led.style.background = colorHex;
         led.style.boxShadow = '0 0 10px ' + colorHex;
     }
+}
+
+function toggleSchedule(val) {
+    document.getElementById('schedule-times').style.display = (val === '1') ? 'block' : 'none';
 }
 
 function selectBay(bayId) {

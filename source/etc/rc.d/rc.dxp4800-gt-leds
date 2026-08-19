@@ -1,5 +1,28 @@
 #!/bin/bash
-# Start/stop/restart the dxp4800-gt-led-monitor
+# Start/stop/restart the dxp4800-gt-led-monitor and API
+
+CONFIG_FILE="/boot/config/plugins/dxp4800-gt-leds/settings.cfg"
+HA_API_ENABLE="0"
+HA_API_PORT="8088"
+
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+fi
+
+start_api() {
+    if [ "$HA_API_ENABLE" = "1" ]; then
+        if pgrep -f "php -S 0.0.0.0:$HA_API_PORT" > /dev/null ; then
+            echo "API is already running."
+        else
+            echo "Starting Local API on port $HA_API_PORT..."
+            php -S 0.0.0.0:$HA_API_PORT -t /usr/local/bin/dxp4800-gt-led-api >/dev/null 2>&1 &
+        fi
+    fi
+}
+
+stop_api() {
+    pkill -f "php -S 0.0.0.0:.*dxp4800-gt-led-api"
+}
 
 case "$1" in
   'start')
@@ -9,16 +32,20 @@ case "$1" in
       echo "Starting dxp4800-gt-led-monitor..."
       /usr/local/bin/dxp4800-gt-led-monitor >/dev/null 2>&1 &
     fi
+    start_api
   ;;
   'stop')
-    echo "Stopping dxp4800-gt-led-monitor..."
+    echo "Stopping dxp4800-gt-led-monitor and API..."
     pkill -f dxp4800-gt-led-monitor
+    stop_api
   ;;
   'restart')
-    echo "Restarting dxp4800-gt-led-monitor..."
+    echo "Restarting dxp4800-gt-led-monitor and API..."
     pkill -f dxp4800-gt-led-monitor
+    stop_api
     sleep 1
     /usr/local/bin/dxp4800-gt-led-monitor >/dev/null 2>&1 &
+    start_api
   ;;
   *)
     echo "usage $0 start|stop|restart"
