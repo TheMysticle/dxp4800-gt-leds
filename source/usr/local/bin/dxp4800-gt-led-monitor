@@ -1,0 +1,99 @@
+#!/bin/bash
+CONFIG_FILE="/boot/config/plugins/dxp4800-gt-leds/settings.cfg"
+
+# Default settings
+NETWORK_INTERFACE="eth0"
+DISK_LED_INVERT="1"
+COLOR_DISK_HEALTH="255 255 255"
+BRIGHTNESS_DISK_LEDS="255"
+POWER_LED_MODE="auto"
+POWER_LED_COLOR="255 255 255"
+NETDEV_LED_MODE="auto"
+NETDEV_LED_COLOR="255 255 255"
+
+# Load configuration if it exists
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+fi
+
+# Apply Power LED
+if [ "$POWER_LED_MODE" = "force_off" ]; then
+    echo none > /sys/class/leds/power/trigger 2>/dev/null
+    echo 0 > /sys/class/leds/power/brightness 2>/dev/null
+else
+    echo none > /sys/class/leds/power/trigger 2>/dev/null
+    echo "$POWER_LED_COLOR" > /sys/class/leds/power/color 2>/dev/null
+    echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/power/brightness 2>/dev/null
+fi
+
+# Apply Netdev LED
+if [ "$NETDEV_LED_MODE" = "force_off" ]; then
+    echo none > /sys/class/leds/netdev/trigger 2>/dev/null
+    echo 0 > /sys/class/leds/netdev/brightness 2>/dev/null
+elif [ "$NETDEV_LED_MODE" = "force_on" ]; then
+    echo none > /sys/class/leds/netdev/trigger 2>/dev/null
+    echo "$NETDEV_LED_COLOR" > /sys/class/leds/netdev/color 2>/dev/null
+    echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/netdev/brightness 2>/dev/null
+else
+    echo none > /sys/class/leds/netdev/trigger 2>/dev/null
+    echo "$NETDEV_LED_COLOR" > /sys/class/leds/netdev/color 2>/dev/null
+    echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/netdev/brightness 2>/dev/null
+    echo netdev > /sys/class/leds/netdev/trigger 2>/dev/null
+    echo "$NETWORK_INTERFACE" > /sys/class/leds/netdev/device_name 2>/dev/null
+    echo 1 > /sys/class/leds/netdev/link 2>/dev/null
+    echo 1 > /sys/class/leds/netdev/rx 2>/dev/null
+    echo 1 > /sys/class/leds/netdev/tx 2>/dev/null
+    echo 50 > /sys/class/leds/netdev/interval 2>/dev/null
+fi
+
+declare -A hctl_to_led=( ["0:0:0:0"]="disk1" ["1:0:0:0"]="disk2" ["2:0:0:0"]="disk3" ["3:0:0:0"]="disk4" )
+declare -A led_to_dev
+
+while read -r name hctl tran; do
+  if [[ -n "${hctl_to_led[$hctl]}" ]]; then
+    led_to_dev[${hctl_to_led[$hctl]}]=$name
+  fi
+done <<< "$(lsblk -S -o name,hctl,tran | grep sata)"
+
+for led in disk1 disk2 disk3 disk4; do
+  bay_mode_var="BAY_${led^^}_MODE"
+  bay_mode="${!bay_mode_var:-auto}"
+  bay_color_var="BAY_${led^^}_COLOR"
+  bay_color="${!bay_color_var:-$COLOR_DISK_HEALTH}"
+  
+  is_populated=0
+  if [[ -n "${led_to_dev[$led]}" ]]; then
+    is_populated=1
+  fi
+  
+  if [[ "$bay_mode" == "force_on" || ( "$bay_mode" == "auto" && $is_populated -eq 1 ) ]]; then
+    echo none > /sys/class/leds/$led/trigger 2>/dev/null
+    echo "$bay_color" > /sys/class/leds/$led/color 2>/dev/null
+    echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/$led/brightness 2>/dev/null
+    echo oneshot > /sys/class/leds/$led/trigger 2>/dev/null
+    echo "$DISK_LED_INVERT" > /sys/class/leds/$led/invert 2>/dev/null
+    echo 50 > /sys/class/leds/$led/delay_on 2>/dev/null
+    echo 50 > /sys/class/leds/$led/delay_off 2>/dev/null
+  else
+    echo none > /sys/class/leds/$led/trigger 2>/dev/null
+    echo 0 > /sys/class/leds/$led/brightness 2>/dev/null
+  fi
+done
+
+declare -A last_stat
+while true; do
+  if [ -f "/var/run/dxp4800-gt-leds-reload" ]; then
+    rm -f "/var/run/dxp4800-gt-leds-reload"
+    exec "$0" "$@"
+  fi
+
+  for led in "${!led_to_dev[@]}"; do
+    dev="${led_to_dev[$led]}"
+    current_stat="$(cat /sys/block/$dev/stat 2>/dev/null)"
+    if [[ "$current_stat" != "${last_stat[$led]}" && -n "${last_stat[$led]}" ]]; then
+      echo 1 > /sys/class/leds/$led/shot 2>/dev/null
+    fi
+    last_stat[$led]=$current_stat
+  done
+  sleep 0.2
+done

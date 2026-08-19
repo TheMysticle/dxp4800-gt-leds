@@ -1,0 +1,65 @@
+<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE PLUGIN [
+<!ENTITY name      "dxp4800-gt-leds">
+<!ENTITY author    "TheMysticle">
+<!ENTITY version   "2026.08.19">
+<!ENTITY launch    "Settings/dxp4800-gt-leds">
+<!ENTITY pluginURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/main/dxp4800-gt-leds.plg">
+<!ENTITY sourceURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/main/source">
+]>
+
+<PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" min="6.9.0">
+
+<CHANGES>
+###2026.08.19
+- Initial release with Web UI, RGB color picker, and per-bay control for DXP4800 GT
+</CHANGES>
+
+<!-- INSTALLATION SCRIPT -->
+<FILE Run="/bin/bash">
+<INLINE>
+echo "Installing UGREEN DXP4800 GT LED Controller..."
+mkdir -p /boot/config/plugins/&name;
+mkdir -p /usr/local/emhttp/plugins/&name;
+mkdir -p /usr/local/bin
+mkdir -p /etc/rc.d
+</INLINE>
+</FILE>
+
+<!-- WEB UI PAGE -->
+<FILE Name="/usr/local/emhttp/plugins/&name;/&name;.page">
+<URL>&sourceURL;/usr/local/emhttp/plugins/&name;/&name;.page</URL>
+</FILE>
+
+<!-- MONITOR DAEMON -->
+<FILE Name="/usr/local/bin/dxp4800-gt-led-monitor" Mode="0755">
+<URL>&sourceURL;/usr/local/bin/dxp4800-gt-led-monitor</URL>
+</FILE>
+
+<!-- INIT SCRIPT -->
+<FILE Name="/etc/rc.d/rc.&name;" Mode="0755">
+<URL>&sourceURL;/etc/rc.d/rc.&name;</URL>
+</FILE>
+
+<!-- POST-INSTALL SCRIPT -->
+<FILE Run="/bin/bash">
+<INLINE>
+echo "Starting &name; daemon..."
+/etc/rc.d/rc.&name; start
+echo "Installation complete!"
+</INLINE>
+</FILE>
+
+<!-- REMOVE SCRIPT -->
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+echo "Stopping &name; daemon..."
+/etc/rc.d/rc.&name; stop
+rm -rf /usr/local/emhttp/plugins/&name;
+rm -f /usr/local/bin/&name;-monitor
+rm -f /etc/rc.d/rc.&name;
+echo "Plugin removed."
+</INLINE>
+</FILE>
+
+</PLUGIN>

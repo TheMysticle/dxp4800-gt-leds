@@ -1,0 +1,25 @@
+#!/bin/bash
+# Start/stop/restart the dxp4800-gt-led-monitor
+
+case "$1" in
+  'start')
+    if pgrep -f dxp4800-gt-led-monitor > /dev/null ; then
+      echo "dxp4800-gt-led-monitor is already running."
+    else
+      echo "Starting dxp4800-gt-led-monitor..."
+      /usr/local/bin/dxp4800-gt-led-monitor >/dev/null 2>&1 &
+    fi
+  ;;
+  'stop')
+    echo "Stopping dxp4800-gt-led-monitor..."
+    pkill -f dxp4800-gt-led-monitor
+  ;;
+  'restart')
+    echo "Restarting dxp4800-gt-led-monitor..."
+    pkill -f dxp4800-gt-led-monitor
+    sleep 1
+    /usr/local/bin/dxp4800-gt-led-monitor >/dev/null 2>&1 &
+  ;;
+  *)
+    echo "usage $0 start|stop|restart"
+esac

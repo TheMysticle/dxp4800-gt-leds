@@ -1,0 +1,410 @@
+Menu="Utilities"
+Title="UGREEN DXP4800 GT LEDs"
+---
+<?php
+$cfgFile = '/boot/config/plugins/dxp4800-gt-leds/settings.cfg';
+$cfgDir = dirname($cfgFile);
+if (!is_dir($cfgDir)) {
+    mkdir($cfgDir, 0755, true);
+}
+
+$cfgDefaults = array(
+  'NETWORK_INTERFACE' => 'eth0',
+  'DISK_LED_INVERT' => '1',
+  'COLOR_DISK_HEALTH' => '255 255 255',
+  'BRIGHTNESS_DISK_LEDS' => '255',
+  'POWER_LED_MODE' => 'auto',
+  'POWER_LED_COLOR' => '255 255 255',
+  'NETDEV_LED_MODE' => 'auto',
+  'NETDEV_LED_COLOR' => '255 255 255',
+  'BAY_DISK1_MODE' => 'auto',
+  'BAY_DISK1_COLOR' => '255 255 255',
+  'BAY_DISK2_MODE' => 'auto',
+  'BAY_DISK2_COLOR' => '255 255 255',
+  'BAY_DISK3_MODE' => 'auto',
+  'BAY_DISK3_COLOR' => '255 255 255',
+  'BAY_DISK4_MODE' => 'auto',
+  'BAY_DISK4_COLOR' => '255 255 255',
+);
+
+$cfg = array();
+if (file_exists($cfgFile)) {
+    $parsed = @parse_ini_file($cfgFile);
+    if (is_array($parsed)) $cfg = $parsed;
+}
+$cfg = array_merge($cfgDefaults, $cfg);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['apply'])) {
+        $new = $cfg;
+        $fields = array('NETWORK_INTERFACE', 'DISK_LED_INVERT', 'COLOR_DISK_HEALTH', 'BRIGHTNESS_DISK_LEDS',
+                        'POWER_LED_MODE', 'POWER_LED_COLOR', 'NETDEV_LED_MODE', 'NETDEV_LED_COLOR',
+                        'BAY_DISK1_MODE', 'BAY_DISK1_COLOR', 'BAY_DISK2_MODE', 'BAY_DISK2_COLOR',
+                        'BAY_DISK3_MODE', 'BAY_DISK3_COLOR', 'BAY_DISK4_MODE', 'BAY_DISK4_COLOR');
+        foreach ($fields as $field) {
+            if (isset($_POST[$field])) {
+                $new[$field] = trim($_POST[$field]);
+            }
+        }
+        $out = "";
+        foreach ($new as $k => $v) {
+            $out .= "$k=\"$v\"\n";
+        }
+        file_put_contents($cfgFile, $out);
+        touch('/var/run/dxp4800-gt-leds-reload');
+        echo '<script>window.location.href = window.location.pathname + window.location.search;</script>';
+        exit;
+    }
+}
+
+function hex2rgb($hex) {
+    $hex = str_replace('#', '', $hex);
+    if(strlen($hex) == 3) {
+        $r = hexdec(substr($hex,0,1).substr($hex,0,1));
+        $g = hexdec(substr($hex,1,1).substr($hex,1,1));
+        $b = hexdec(substr($hex,2,1).substr($hex,2,1));
+    } else {
+        $r = hexdec(substr($hex,0,2));
+        $g = hexdec(substr($hex,2,2));
+        $b = hexdec(substr($hex,4,2));
+    }
+    return "$r $g $b";
+}
+function rgb2hex($rgb) {
+    $parts = explode(' ', $rgb);
+    if (count($parts) != 3) return '#ffffff';
+    return sprintf("#%02x%02x%02x", $parts[0], $parts[1], $parts[2]);
+}
+?>
+
+<script>
+if ( window.history.replaceState ) { window.history.replaceState( null, null, window.location.href ); }
+</script>
+
+<style>
+.nas-container {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0;
+}
+.nas-box {
+    width: 320px;
+    height: 400px;
+    background: #1e1e24;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.1);
+    position: relative;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.nas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nas-logo {
+    color: #888;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+.nas-power-cluster {
+    display: flex;
+    gap: 10px;
+}
+.nas-power {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #2a2a30;
+    border: 2px solid #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.nas-power-led {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 8px #fff;
+}
+.nas-net-led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0f0;
+    margin-top: 8px;
+    box-shadow: 0 0 8px #0f0;
+    cursor: pointer;
+}
+.nas-bays {
+    display: flex;
+    justify-content: space-between;
+    height: 280px;
+    margin-top: 15px;
+}
+.nas-bay {
+    width: 60px;
+    background: #111;
+    border-radius: 6px;
+    position: relative;
+    border: 1px solid #2a2a30;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.nas-bay:hover, .nas-power:hover, .nas-net-led:hover {
+    border-color: #555;
+}
+.nas-bay-handle {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    height: 25px;
+    background: #1e1e24;
+    border-radius: 4px;
+}
+.nas-bay-led {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+}
+.settings-panel {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+.dark-mode .settings-panel {
+    background: #222;
+    border-color: #444;
+}
+.bay-settings {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 6px;
+}
+.dark-mode .bay-settings {
+    background: rgba(255,255,255,0.05);
+}
+.active-element {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 2px #007bff;
+}
+</style>
+
+<form method="post">
+
+<div class="nas-container">
+    <div class="nas-box">
+        <div class="nas-header">
+            <div class="nas-logo">DXP4800 GT</div>
+            <div class="nas-power-cluster">
+                <?php 
+                  $netMode = $cfg['NETDEV_LED_MODE'];
+                  $netColor = rgb2hex($cfg['NETDEV_LED_COLOR']);
+                  $netBg = ($netMode != 'force_off') ? $netColor : '#333';
+                  $netShadow = ($netMode != 'force_off') ? "0 0 8px $netColor" : 'none';
+
+                  $powMode = $cfg['POWER_LED_MODE'];
+                  $powColor = rgb2hex($cfg['POWER_LED_COLOR']);
+                  $powBg = ($powMode != 'force_off') ? $powColor : '#333';
+                  $powShadow = ($powMode != 'force_off') ? "0 0 8px $powColor" : 'none';
+                ?>
+                <div class="nas-net-led interactive-led" id="led-indicator-netdev" data-id="netdev" onclick="selectBay('netdev')" title="Network LED" style="background: <?= $netBg ?>; box-shadow: <?= $netShadow ?>;"></div>
+                <div class="nas-power interactive-led" data-id="power" onclick="selectBay('power')" title="Power LED">
+                    <div class="nas-power-led" id="led-indicator-power" style="background: <?= $powBg ?>; box-shadow: <?= $powShadow ?>;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nas-bays">
+            <?php for($i=1; $i<=4; $i++): 
+                $color = rgb2hex($cfg["BAY_DISK{$i}_COLOR"]);
+                $mode = $cfg["BAY_DISK{$i}_MODE"];
+                $led_bg = ($mode != 'force_off') ? $color : '#333';
+                $led_shadow = ($mode != 'force_off') ? "0 0 10px $color" : 'none';
+            ?>
+            <div class="nas-bay interactive-led" data-id="disk<?= $i ?>" onclick="selectBay('disk<?= $i ?>')">
+                <div class="nas-bay-handle"></div>
+                <div class="nas-bay-led" id="led-indicator-disk<?= $i ?>" style="background: <?= $led_bg ?>; box-shadow: <?= $led_shadow ?>;"></div>
+            </div>
+            <?php endfor; ?>
+        </div>
+    </div>
+</div>
+
+<div class="settings-panel">
+    <h3>Global Settings</h3>
+    
+    <dl>
+        <dt>Network Interface:</dt>
+        <dd>
+            <input type="text" name="NETWORK_INTERFACE" value="<?= htmlspecialchars($cfg['NETWORK_INTERFACE']) ?>" placeholder="eth0 or br0">
+            <span class="input-instructions">The interface to monitor for the network LED.</span>
+        </dd>
+    </dl>
+    
+    <dl>
+        <dt>Disk LED Behavior Mode:</dt>
+        <dd>
+            <select name="DISK_LED_INVERT">
+                <option value="1" <?= $cfg['DISK_LED_INVERT'] == '1' ? 'selected' : '' ?>>Solid on (Blink off during activity)</option>
+                <option value="0" <?= $cfg['DISK_LED_INVERT'] == '0' ? 'selected' : '' ?>>Normally off (Blink on during activity)</option>
+            </select>
+        </dd>
+    </dl>
+
+    <dl>
+        <dt>Default Disk Color:</dt>
+        <dd>
+            <input type="color" id="global-color" onchange="updateGlobalColor(this.value)" value="<?= rgb2hex($cfg['COLOR_DISK_HEALTH']) ?>">
+            <input type="hidden" name="COLOR_DISK_HEALTH" id="global-color-rgb" value="<?= $cfg['COLOR_DISK_HEALTH'] ?>">
+        </dd>
+    </dl>
+
+    <dl>
+        <dt>Global Brightness:</dt>
+        <dd>
+            <input type="range" name="BRIGHTNESS_DISK_LEDS" min="0" max="255" value="<?= $cfg['BRIGHTNESS_DISK_LEDS'] ?>" oninput="$('#brightness-val').text(this.value)">
+            <span id="brightness-val" style="margin-left: 10px; font-weight: bold;"><?= $cfg['BRIGHTNESS_DISK_LEDS'] ?></span>
+        </dd>
+    </dl>
+    
+    <h3 style="margin-top: 30px;">Per-LED Overrides <small style="font-weight: normal; color: #888;">(Click an LED on the 3D model to edit)</small></h3>
+    
+    <!-- POWER LED -->
+    <div id="bay-settings-power" class="bay-settings">
+        <h4>Power Button LED Settings</h4>
+        <dl>
+            <dt>Mode:</dt>
+            <dd>
+                <select name="POWER_LED_MODE" id="bay-mode-power" onchange="updateBayVisuals('power')">
+                    <option value="auto" <?= $cfg["POWER_LED_MODE"] == 'auto' ? 'selected' : '' ?>>Solid On (Default)</option>
+                    <option value="force_off" <?= $cfg["POWER_LED_MODE"] == 'force_off' ? 'selected' : '' ?>>Force OFF</option>
+                </select>
+            </dd>
+        </dl>
+        <dl>
+            <dt>Color:</dt>
+            <dd>
+                <input type="color" id="bay-color-picker-power" onchange="updateBayColor('power', this.value)" value="<?= rgb2hex($cfg["POWER_LED_COLOR"]) ?>">
+                <input type="hidden" name="POWER_LED_COLOR" id="bay-color-rgb-power" value="<?= $cfg["POWER_LED_COLOR"] ?>">
+            </dd>
+        </dl>
+    </div>
+    
+    <!-- NETDEV LED -->
+    <div id="bay-settings-netdev" class="bay-settings">
+        <h4>Network LED Settings</h4>
+        <dl>
+            <dt>Mode:</dt>
+            <dd>
+                <select name="NETDEV_LED_MODE" id="bay-mode-netdev" onchange="updateBayVisuals('netdev')">
+                    <option value="auto" <?= $cfg["NETDEV_LED_MODE"] == 'auto' ? 'selected' : '' ?>>Blink on Network Activity</option>
+                    <option value="force_on" <?= $cfg["NETDEV_LED_MODE"] == 'force_on' ? 'selected' : '' ?>>Force Solid ON</option>
+                    <option value="force_off" <?= $cfg["NETDEV_LED_MODE"] == 'force_off' ? 'selected' : '' ?>>Force OFF</option>
+                </select>
+            </dd>
+        </dl>
+        <dl>
+            <dt>Color:</dt>
+            <dd>
+                <input type="color" id="bay-color-picker-netdev" onchange="updateBayColor('netdev', this.value)" value="<?= rgb2hex($cfg["NETDEV_LED_COLOR"]) ?>">
+                <input type="hidden" name="NETDEV_LED_COLOR" id="bay-color-rgb-netdev" value="<?= $cfg["NETDEV_LED_COLOR"] ?>">
+            </dd>
+        </dl>
+    </div>
+
+    <!-- DISK BAYS -->
+    <?php for($i=1; $i<=4; $i++): ?>
+    <div id="bay-settings-disk<?= $i ?>" class="bay-settings">
+        <h4>Drive Bay <?= $i ?> Settings</h4>
+        <dl>
+            <dt>Mode:</dt>
+            <dd>
+                <select name="BAY_DISK<?= $i ?>_MODE" id="bay-mode-disk<?= $i ?>" onchange="updateBayVisuals('disk<?= $i ?>')">
+                    <option value="auto" <?= $cfg["BAY_DISK{$i}_MODE"] == 'auto' ? 'selected' : '' ?>>Auto (Follow Disk Presence)</option>
+                    <option value="force_on" <?= $cfg["BAY_DISK{$i}_MODE"] == 'force_on' ? 'selected' : '' ?>>Force ON (Even if empty)</option>
+                    <option value="force_off" <?= $cfg["BAY_DISK{$i}_MODE"] == 'force_off' ? 'selected' : '' ?>>Force OFF</option>
+                </select>
+            </dd>
+        </dl>
+        <dl>
+            <dt>Custom Color:</dt>
+            <dd>
+                <input type="color" id="bay-color-picker-disk<?= $i ?>" onchange="updateBayColor('disk<?= $i ?>', this.value)" value="<?= rgb2hex($cfg["BAY_DISK{$i}_COLOR"]) ?>">
+                <input type="hidden" name="BAY_DISK<?= $i ?>_COLOR" id="bay-color-rgb-disk<?= $i ?>" value="<?= $cfg["BAY_DISK{$i}_COLOR"] ?>">
+            </dd>
+        </dl>
+    </div>
+    <?php endfor; ?>
+
+    <div style="margin-top: 30px;">
+        <input type="submit" name="apply" value="Apply Settings" style="padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+    </div>
+</div>
+</form>
+
+<script>
+function hexToRgbStr(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? 
+        parseInt(result[1], 16) + ' ' + parseInt(result[2], 16) + ' ' + parseInt(result[3], 16) : '255 255 255';
+}
+
+function updateGlobalColor(hex) {
+    document.getElementById('global-color-rgb').value = hexToRgbStr(hex);
+}
+
+function updateBayColor(bayId, hex) {
+    document.getElementById('bay-color-rgb-' + bayId).value = hexToRgbStr(hex);
+    updateBayVisuals(bayId);
+}
+
+function updateBayVisuals(bayId) {
+    var mode = document.getElementById('bay-mode-' + bayId).value;
+    var colorHex = document.getElementById('bay-color-picker-' + bayId).value;
+    var led = document.getElementById('led-indicator-' + bayId);
+    
+    if (mode === 'force_off') {
+        led.style.background = '#333';
+        led.style.boxShadow = 'none';
+    } else {
+        led.style.background = colorHex;
+        led.style.boxShadow = '0 0 10px ' + colorHex;
+    }
+}
+
+function selectBay(bayId) {
+    document.querySelectorAll('.interactive-led').forEach(function(el) {
+        el.classList.remove('active-element');
+    });
+    document.querySelectorAll('.bay-settings').forEach(function(el) {
+        el.style.display = 'none';
+    });
+    
+    var selectedBay = document.querySelector('.interactive-led[data-id="' + bayId + '"]');
+    if (selectedBay) {
+        selectedBay.classList.add('active-element');
+    }
+    
+    var settingsPanel = document.getElementById('bay-settings-' + bayId);
+    if (settingsPanel) {
+        settingsPanel.style.display = 'block';
+        settingsPanel.scrollIntoView({behavior: "smooth", block: "center"});
+    }
+}
+</script>
