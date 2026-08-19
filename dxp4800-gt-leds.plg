@@ -44,8 +44,8 @@ mkdir -p /usr/local/bin/dxp4800-gt-led-api
 </FILE>
 
 <!-- API SCRIPT -->
-<FILE Name="/usr/local/bin/dxp4800-gt-led-api/api.sh" Mode="0755">
-<URL>&sourceURL;/usr/local/bin/dxp4800-gt-led-api/api.sh</URL>
+<FILE Name="/usr/local/bin/dxp4800-gt-led-api/api.php" Mode="0644">
+<URL>&sourceURL;/usr/local/bin/dxp4800-gt-led-api/api.php</URL>
 </FILE>
 
 <!-- INIT SCRIPT -->
