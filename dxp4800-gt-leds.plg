@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dxp4800-gt-leds">
 <!ENTITY author    "TheMysticle">
-<!ENTITY version   "2026.08.19">
+<!ENTITY version   "2026.08.20">
 <!ENTITY launch    "Settings/dxp4800-gt-leds">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/main/dxp4800-gt-leds.plg">
 <!ENTITY sourceURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/main/source">
