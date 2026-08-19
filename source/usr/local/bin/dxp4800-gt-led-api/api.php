@@ -18,6 +18,12 @@ while (true) {
         // Ignore random HTTP scanners
         if (strpos($input, 'HTTP/') !== false) continue;
         
+        $allowed_fields = array('MASTER_LED_SWITCH', 'SCHEDULE_ENABLE', 'SCHEDULE_START_TIME', 'SCHEDULE_END_TIME',
+                                'NETWORK_INTERFACE', 'DISK_LED_INVERT', 'COLOR_DISK_HEALTH', 'BRIGHTNESS_DISK_LEDS',
+                                'POWER_LED_MODE', 'POWER_LED_COLOR', 'NETDEV_LED_MODE', 'NETDEV_LED_COLOR',
+                                'BAY_DISK1_MODE', 'BAY_DISK1_COLOR', 'BAY_DISK2_MODE', 'BAY_DISK2_COLOR',
+                                'BAY_DISK3_MODE', 'BAY_DISK3_COLOR', 'BAY_DISK4_MODE', 'BAY_DISK4_COLOR');
+
         $changed = false;
         $cfg = array();
         if (file_exists($cfgFile)) {
@@ -31,7 +37,7 @@ while (true) {
             if (count($parts) == 2) {
                 $key = trim($parts[0]);
                 $value = trim($parts[1]);
-                if (preg_match('/^[A-Z0-9_]+$/', $key) && isset($cfg[$key])) {
+                if (in_array($key, $allowed_fields)) {
                     $cfg[$key] = $value;
                     $changed = true;
                 }
