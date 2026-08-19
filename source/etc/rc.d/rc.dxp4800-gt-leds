@@ -15,13 +15,13 @@ start_api() {
             echo "API is already running."
         else
             echo "Starting Local API on port $HA_API_PORT..."
-            php -d display_errors=1 -S 0.0.0.0:$HA_API_PORT /usr/local/bin/dxp4800-gt-led-api/index.php > /tmp/dxp4800-api.log 2>&1 &
+            /usr/bin/python3 /usr/local/bin/dxp4800-gt-led-api/api.py $HA_API_PORT >/dev/null 2>&1 &
         fi
     fi
 }
 
 stop_api() {
-    pkill -f "php -S 0.0.0.0:.*dxp4800-gt-led-api"
+    pkill -f "python3.*dxp4800-gt-led-api/api.py"
 }
 
 case "$1" in
