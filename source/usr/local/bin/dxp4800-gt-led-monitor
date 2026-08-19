@@ -154,13 +154,15 @@ while true; do
       exec "$0" "$@"
   fi
 
+  any_auto=0
   for led in "${!led_to_dev[@]}"; do
     dev="${led_to_dev[$led]}"
     bay_mode_var="BAY_${led^^}_MODE"
     bay_mode="${!bay_mode_var:-auto}"
-    current_stat="$(cat /sys/block/$dev/stat 2>/dev/null)"
     
     if [ "$bay_mode" = "auto" ]; then
+        any_auto=1
+        current_stat="$(cat /sys/block/$dev/stat 2>/dev/null)"
         if [[ "$current_stat" != "${last_stat[$led]}" && -n "${last_stat[$led]}" ]]; then
           if [ "$DISK_LED_INVERT" = "1" ]; then
              echo 0 > /sys/class/leds/$led/brightness 2>/dev/null
@@ -174,9 +176,13 @@ while true; do
              echo 0 > /sys/class/leds/$led/brightness 2>/dev/null
           fi
         fi
+        last_stat[$led]=$current_stat
     fi
-    last_stat[$led]=$current_stat
   done
   
-  sleep 0.2
+  if [ "$any_auto" = "0" ]; then
+      sleep 2
+  else
+      sleep 0.2
+  fi
 done
