@@ -60,8 +60,8 @@ if [ "$system_on" = "1" ]; then
     else
         echo none > /sys/class/leds/netdev/trigger 2>/dev/null
         echo "$NETDEV_LED_COLOR" > /sys/class/leds/netdev/color 2>/dev/null
-        echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/netdev/brightness 2>/dev/null
         echo netdev > /sys/class/leds/netdev/trigger 2>/dev/null
+        echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/netdev/brightness 2>/dev/null
         echo "$NETWORK_INTERFACE" > /sys/class/leds/netdev/device_name 2>/dev/null
         echo 1 > /sys/class/leds/netdev/link 2>/dev/null
         echo 1 > /sys/class/leds/netdev/rx 2>/dev/null
@@ -98,8 +98,8 @@ if [ "$system_on" = "1" ]; then
       elif [[ "$bay_mode" == "auto" && $is_populated -eq 1 ]]; then
         echo none > /sys/class/leds/$led/trigger 2>/dev/null
         echo "$bay_color" > /sys/class/leds/$led/color 2>/dev/null
-        echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/$led/brightness 2>/dev/null
         echo oneshot > /sys/class/leds/$led/trigger 2>/dev/null
+        echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/$led/brightness 2>/dev/null
         echo "$DISK_LED_INVERT" > /sys/class/leds/$led/invert 2>/dev/null
         echo 50 > /sys/class/leds/$led/delay_on 2>/dev/null
         echo 50 > /sys/class/leds/$led/delay_off 2>/dev/null
