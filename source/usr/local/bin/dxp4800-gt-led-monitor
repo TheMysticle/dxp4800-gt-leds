@@ -66,7 +66,13 @@ for led in disk1 disk2 disk3 disk4; do
     is_populated=1
   fi
   
-  if [[ "$bay_mode" == "force_on" || ( "$bay_mode" == "auto" && $is_populated -eq 1 ) ]]; then
+  if [[ "$bay_mode" == "force_on" && $is_populated -eq 0 ]]; then
+    # Empty bay forced ON -> solid LED, no trigger
+    echo none > /sys/class/leds/$led/trigger 2>/dev/null
+    echo "$bay_color" > /sys/class/leds/$led/color 2>/dev/null
+    echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/$led/brightness 2>/dev/null
+  elif [[ "$bay_mode" == "force_on" || ( "$bay_mode" == "auto" && $is_populated -eq 1 ) ]]; then
+    # Populated bay -> blink on activity
     echo none > /sys/class/leds/$led/trigger 2>/dev/null
     echo "$bay_color" > /sys/class/leds/$led/color 2>/dev/null
     echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/$led/brightness 2>/dev/null
@@ -75,6 +81,7 @@ for led in disk1 disk2 disk3 disk4; do
     echo 50 > /sys/class/leds/$led/delay_on 2>/dev/null
     echo 50 > /sys/class/leds/$led/delay_off 2>/dev/null
   else
+    # Force off or Auto+Empty -> OFF
     echo none > /sys/class/leds/$led/trigger 2>/dev/null
     echo 0 > /sys/class/leds/$led/brightness 2>/dev/null
   fi
