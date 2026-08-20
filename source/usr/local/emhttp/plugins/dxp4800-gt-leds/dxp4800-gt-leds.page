@@ -1,4 +1,5 @@
 Menu="Utilities"
+Icon="lightbulb-o"
 Title="UGREEN DXP4800 GT LEDs"
 ---
 <?php
@@ -6,6 +7,20 @@ $cfgFile = '/boot/config/plugins/dxp4800-gt-leds/settings.cfg';
 $cfgDir = dirname($cfgFile);
 if (!is_dir($cfgDir)) {
     mkdir($cfgDir, 0755, true);
+}
+
+// Detect populated disk bays
+$populated_bays = array();
+exec("lsblk -S -o name,hctl,tran | grep sata", $output);
+$hctl_to_bay = array("0:0:0:0"=>1, "1:0:0:0"=>2, "2:0:0:0"=>3, "3:0:0:0"=>4);
+foreach ($output as $line) {
+    $parts = preg_split('/\s+/', trim($line));
+    if (count($parts) >= 2) {
+        $hctl = $parts[1];
+        if (isset($hctl_to_bay[$hctl])) {
+            $populated_bays[] = $hctl_to_bay[$hctl];
+        }
+    }
 }
 
 $cfgDefaults = array(
@@ -31,6 +46,8 @@ $cfgDefaults = array(
   'BAY_DISK3_COLOR' => '255 255 255',
   'BAY_DISK4_MODE' => 'auto',
   'BAY_DISK4_COLOR' => '255 255 255',
+  'NETDEV_LED_INVERT' => '0',
+  'NETDEV_LED_TXRX' => 'both',
 );
 
 $cfg = array();
@@ -47,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'HA_API_ENABLE', 'HA_API_PORT', 'NETWORK_INTERFACE', 'DISK_LED_INVERT', 
                         'COLOR_DISK_HEALTH', 'BRIGHTNESS_DISK_LEDS',
                         'POWER_LED_MODE', 'POWER_LED_COLOR', 'NETDEV_LED_MODE', 'NETDEV_LED_COLOR',
+                        'NETDEV_LED_INVERT', 'NETDEV_LED_TXRX',
                         'BAY_DISK1_MODE', 'BAY_DISK1_COLOR', 'BAY_DISK2_MODE', 'BAY_DISK2_COLOR',
                         'BAY_DISK3_MODE', 'BAY_DISK3_COLOR', 'BAY_DISK4_MODE', 'BAY_DISK4_COLOR');
         foreach ($fields as $field) {
@@ -181,6 +199,15 @@ if ( window.history.replaceState ) { window.history.replaceState( null, null, wi
     background: #1e1e24;
     border-radius: 4px;
 }
+.bay-populated {
+    background: #18181e;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.03);
+}
+.bay-populated .nas-bay-handle {
+    background: #282833;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.05);
+}
 .nas-bay-led {
     position: absolute;
     bottom: 15px;
@@ -255,8 +282,13 @@ if ( window.history.replaceState ) { window.history.replaceState( null, null, wi
                 $mode = $cfg["BAY_DISK{$i}_MODE"];
                 $led_bg = ($mode != 'force_off') ? $color : '#333';
                 $led_shadow = ($mode != 'force_off') ? "0 0 10px $color" : 'none';
+                
+                $bay_class = "nas-bay interactive-led";
+                if (in_array($i, $populated_bays)) {
+                    $bay_class .= " bay-populated";
+                }
             ?>
-            <div class="nas-bay interactive-led" data-id="disk<?= $i ?>" onclick="selectBay('disk<?= $i ?>')">
+            <div class="<?= $bay_class ?>" data-id="disk<?= $i ?>" onclick="selectBay('disk<?= $i ?>')">
                 <div class="nas-bay-handle"></div>
                 <div class="nas-bay-led" id="led-indicator-disk<?= $i ?>" style="background: <?= $led_bg ?>; box-shadow: <?= $led_shadow ?>;"></div>
             </div>
@@ -386,6 +418,25 @@ if ( window.history.replaceState ) { window.history.replaceState( null, null, wi
                     <option value="auto" <?= $cfg["NETDEV_LED_MODE"] == 'auto' ? 'selected' : '' ?>>Blink on Network Activity</option>
                     <option value="force_on" <?= $cfg["NETDEV_LED_MODE"] == 'force_on' ? 'selected' : '' ?>>Force Solid ON</option>
                     <option value="force_off" <?= $cfg["NETDEV_LED_MODE"] == 'force_off' ? 'selected' : '' ?>>Force OFF</option>
+                </select>
+            </dd>
+        </dl>
+        <dl>
+            <dt>Behavior:</dt>
+            <dd>
+                <select name="NETDEV_LED_INVERT">
+                    <option value="0" <?= $cfg['NETDEV_LED_INVERT'] == '0' ? 'selected' : '' ?>>Normally off (Blink on during activity)</option>
+                    <option value="1" <?= $cfg['NETDEV_LED_INVERT'] == '1' ? 'selected' : '' ?>>Solid on (Blink off during activity)</option>
+                </select>
+            </dd>
+        </dl>
+        <dl>
+            <dt>Direction:</dt>
+            <dd>
+                <select name="NETDEV_LED_TXRX">
+                    <option value="both" <?= $cfg['NETDEV_LED_TXRX'] == 'both' ? 'selected' : '' ?>>Tx & Rx (Both)</option>
+                    <option value="rx" <?= $cfg['NETDEV_LED_TXRX'] == 'rx' ? 'selected' : '' ?>>Rx Only (Receive)</option>
+                    <option value="tx" <?= $cfg['NETDEV_LED_TXRX'] == 'tx' ? 'selected' : '' ?>>Tx Only (Transmit)</option>
                 </select>
             </dd>
         </dl>

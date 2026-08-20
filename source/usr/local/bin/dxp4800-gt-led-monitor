@@ -13,6 +13,8 @@ POWER_LED_MODE="auto"
 POWER_LED_COLOR="255 255 255"
 NETDEV_LED_MODE="auto"
 NETDEV_LED_COLOR="255 255 255"
+NETDEV_LED_INVERT="0"
+NETDEV_LED_TXRX="both"
 
 if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
@@ -53,19 +55,32 @@ if [ "$system_on" = "1" ]; then
     if [ "$NETDEV_LED_MODE" = "force_off" ]; then
         echo none > /sys/class/leds/netdev/trigger 2>/dev/null
         echo 0 > /sys/class/leds/netdev/brightness 2>/dev/null
+        echo 0 > /sys/class/leds/netdev/invert 2>/dev/null
     elif [ "$NETDEV_LED_MODE" = "force_on" ]; then
         echo none > /sys/class/leds/netdev/trigger 2>/dev/null
         echo "$NETDEV_LED_COLOR" > /sys/class/leds/netdev/color 2>/dev/null
         echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/netdev/brightness 2>/dev/null
+        echo 0 > /sys/class/leds/netdev/invert 2>/dev/null
     else
         echo none > /sys/class/leds/netdev/trigger 2>/dev/null
         echo "$NETDEV_LED_COLOR" > /sys/class/leds/netdev/color 2>/dev/null
+        echo "$NETDEV_LED_INVERT" > /sys/class/leds/netdev/invert 2>/dev/null
         echo netdev > /sys/class/leds/netdev/trigger 2>/dev/null
         echo "$BRIGHTNESS_DISK_LEDS" > /sys/class/leds/netdev/brightness 2>/dev/null
         echo "$NETWORK_INTERFACE" > /sys/class/leds/netdev/device_name 2>/dev/null
         echo 1 > /sys/class/leds/netdev/link 2>/dev/null
-        echo 1 > /sys/class/leds/netdev/rx 2>/dev/null
-        echo 1 > /sys/class/leds/netdev/tx 2>/dev/null
+        
+        if [ "$NETDEV_LED_TXRX" = "rx" ]; then
+            echo 1 > /sys/class/leds/netdev/rx 2>/dev/null
+            echo 0 > /sys/class/leds/netdev/tx 2>/dev/null
+        elif [ "$NETDEV_LED_TXRX" = "tx" ]; then
+            echo 0 > /sys/class/leds/netdev/rx 2>/dev/null
+            echo 1 > /sys/class/leds/netdev/tx 2>/dev/null
+        else
+            echo 1 > /sys/class/leds/netdev/rx 2>/dev/null
+            echo 1 > /sys/class/leds/netdev/tx 2>/dev/null
+        fi
+        
         echo 50 > /sys/class/leds/netdev/interval 2>/dev/null
     fi
 
