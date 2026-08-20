@@ -120,106 +120,170 @@ if ( window.history.replaceState ) { window.history.replaceState( null, null, wi
     margin: 30px 0;
 }
 .nas-box {
-    width: 320px;
-    height: 400px;
-    background: #1e1e24;
-    border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.1);
+    width: 400px;
+    height: 480px;
+    background: #151518;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
     position: relative;
-    padding: 20px;
+    padding: 12px;
     box-sizing: border-box;
+}
+.nas-inner-border {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #bba38a;
+    border-radius: 10px;
+    box-sizing: border-box;
+    padding: 20px 25px 15px 25px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-}
-.nas-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.nas-logo {
-    color: #888;
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 1px;
-}
-.nas-power-cluster {
-    display: flex;
-    gap: 10px;
-}
-.nas-power {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #2a2a30;
-    border: 2px solid #111;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-.nas-power-led {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 0 8px #fff;
-}
-.nas-net-led {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #0f0;
-    margin-top: 8px;
-    box-shadow: 0 0 8px #0f0;
-    cursor: pointer;
+    position: relative;
 }
 .nas-bays {
     display: flex;
     justify-content: space-between;
-    height: 280px;
-    margin-top: 15px;
+    height: 350px;
 }
 .nas-bay {
-    width: 60px;
-    background: #111;
+    width: 65px;
+    background: #1a1a1f;
     border-radius: 6px;
     position: relative;
-    border: 1px solid #2a2a30;
+    border: 1px solid #111;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-.nas-bay:hover, .nas-power:hover, .nas-net-led:hover {
+.nas-bay:hover, .nas-power-btn:hover, .nas-led-col:hover {
     border-color: #555;
 }
-.nas-bay-handle {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    height: 25px;
-    background: #1e1e24;
-    border-radius: 4px;
-}
 .bay-populated {
-    background: #18181e;
-    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.03);
+    background: #24242a;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05);
 }
-.bay-populated .nas-bay-handle {
-    background: #282833;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.05);
+.nas-bay-number {
+    color: #fff;
+    font-size: 26px;
+    font-weight: 600;
+    margin-top: 100px;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 1px;
 }
-.nas-bay-led {
+.nas-bay-keyhole {
     position: absolute;
-    bottom: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 8px;
-    height: 8px;
+    bottom: 25px;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #111;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.nas-bay-keyhole::after {
+    content: '';
+    width: 3px;
+    height: 9px;
+    background: #111;
+}
+.nas-lower-panel {
+    display: flex;
+    align-items: flex-end;
+    margin-top: auto;
+    padding-bottom: 30px;
+}
+.nas-power-btn {
+    width: 28px;
+    height: 18px;
+    background: #151518;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: -5px;
+}
+.nas-power-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #fff;
+}
+.nas-led-group {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-left: 20px;
+}
+.nas-led-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+.nas-led-dot {
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: #333;
 }
+.nas-led-label {
+    font-size: 7px;
+    color: #777;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+.nas-io-group {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    margin-left: auto;
+}
+.nas-io-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.nas-sd {
+    width: 30px;
+    height: 3px;
+    background: #111;
+    border-radius: 1px;
+}
+.nas-usbc {
+    width: 12px;
+    height: 4px;
+    background: #111;
+    border-radius: 2px;
+}
+.nas-usba {
+    width: 16px;
+    height: 6px;
+    background: #111;
+    border-bottom: 2px solid #0055ff;
+    border-radius: 1px;
+}
+.nas-logo {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #bba38a;
+    background: #151518;
+    padding: 0 15px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
 .settings-panel {
     background: rgba(0,0,0,0.05);
     border: 1px solid rgba(0,0,0,0.1);
@@ -258,43 +322,69 @@ if ( window.history.replaceState ) { window.history.replaceState( null, null, wi
 
 <div class="nas-container">
     <div class="nas-box">
-        <div class="nas-header">
-            <div class="nas-logo">DXP4800 GT</div>
-            <div class="nas-power-cluster">
+        <div class="nas-inner-border">
+            <div class="nas-bays">
+                <?php for($i=1; $i<=4; $i++): 
+                    $color = rgb2hex($cfg["BAY_DISK{$i}_COLOR"]);
+                    $mode = $cfg["BAY_DISK{$i}_MODE"];
+                    $led_bg = ($mode != 'force_off') ? $color : '#333';
+                    $led_shadow = ($mode != 'force_off') ? "0 0 10px $color" : 'none';
+                    
+                    $bay_class = "nas-bay interactive-led";
+                    if (in_array($i, $populated_bays)) {
+                        $bay_class .= " bay-populated";
+                    }
+                ?>
+                <div class="<?= $bay_class ?>" data-id="disk<?= $i ?>" onclick="selectBay('disk<?= $i ?>')" title="Select Disk <?= $i ?>">
+                    <div class="nas-bay-number">0<?= $i ?></div>
+                    <div class="nas-bay-keyhole"></div>
+                </div>
+                <?php endfor; ?>
+            </div>
+            
+            <div class="nas-lower-panel">
                 <?php 
-                  $netMode = $cfg['NETDEV_LED_MODE'];
-                  $netColor = rgb2hex($cfg['NETDEV_LED_COLOR']);
-                  $netBg = ($netMode != 'force_off') ? $netColor : '#333';
-                  $netShadow = ($netMode != 'force_off') ? "0 0 8px $netColor" : 'none';
-
                   $powMode = $cfg['POWER_LED_MODE'];
                   $powColor = rgb2hex($cfg['POWER_LED_COLOR']);
                   $powBg = ($powMode != 'force_off') ? $powColor : '#333';
                   $powShadow = ($powMode != 'force_off') ? "0 0 8px $powColor" : 'none';
                 ?>
-                <div class="nas-net-led interactive-led" id="led-indicator-netdev" data-id="netdev" onclick="selectBay('netdev')" title="Network LED" style="background: <?= $netBg ?>; box-shadow: <?= $netShadow ?>;"></div>
-                <div class="nas-power interactive-led" data-id="power" onclick="selectBay('power')" title="Power LED">
-                    <div class="nas-power-led" id="led-indicator-power" style="background: <?= $powBg ?>; box-shadow: <?= $powShadow ?>;"></div>
+                <div class="nas-power-btn interactive-led" data-id="power" onclick="selectBay('power')" title="Power LED">
+                    <div class="nas-power-dot" id="led-indicator-power" style="background: <?= $powBg ?>; box-shadow: <?= $powShadow ?>;"></div>
+                </div>
+                
+                <div class="nas-led-group">
+                    <?php 
+                      $netMode = $cfg['NETDEV_LED_MODE'];
+                      $netColor = rgb2hex($cfg['NETDEV_LED_COLOR']);
+                      $netBg = ($netMode != 'force_off') ? $netColor : '#333';
+                      $netShadow = ($netMode != 'force_off') ? "0 0 8px $netColor" : 'none';
+                    ?>
+                    <div class="nas-led-col interactive-led" data-id="netdev" onclick="selectBay('netdev')" title="Network LED">
+                        <div class="nas-led-dot" id="led-indicator-netdev" style="background: <?= $netBg ?>; box-shadow: <?= $netShadow ?>;"></div>
+                        <div class="nas-led-label">LAN</div>
+                    </div>
+                    <?php for($i=1; $i<=4; $i++): 
+                        $color = rgb2hex($cfg["BAY_DISK{$i}_COLOR"]);
+                        $mode = $cfg["BAY_DISK{$i}_MODE"];
+                        $led_bg = ($mode != 'force_off') ? $color : '#333';
+                        $led_shadow = ($mode != 'force_off') ? "0 0 10px $color" : 'none';
+                    ?>
+                    <div class="nas-led-col interactive-led" data-id="disk<?= $i ?>" onclick="selectBay('disk<?= $i ?>')" title="Disk <?= $i ?> LED">
+                        <div class="nas-led-dot" id="led-indicator-disk<?= $i ?>" style="background: <?= $led_bg ?>; box-shadow: <?= $led_shadow ?>;"></div>
+                        <div class="nas-led-label">DISK<?= $i ?></div>
+                    </div>
+                    <?php endfor; ?>
+                </div>
+
+                <div class="nas-io-group">
+                    <div class="nas-io-col"><div class="nas-sd"></div><div class="nas-led-label">SD</div></div>
+                    <div class="nas-io-col"><div class="nas-usbc"></div><div class="nas-led-label">USB-C</div></div>
+                    <div class="nas-io-col"><div class="nas-usba"></div><div class="nas-led-label">USB3.2</div></div>
                 </div>
             </div>
-        </div>
-        <div class="nas-bays">
-            <?php for($i=1; $i<=4; $i++): 
-                $color = rgb2hex($cfg["BAY_DISK{$i}_COLOR"]);
-                $mode = $cfg["BAY_DISK{$i}_MODE"];
-                $led_bg = ($mode != 'force_off') ? $color : '#333';
-                $led_shadow = ($mode != 'force_off') ? "0 0 10px $color" : 'none';
-                
-                $bay_class = "nas-bay interactive-led";
-                if (in_array($i, $populated_bays)) {
-                    $bay_class .= " bay-populated";
-                }
-            ?>
-            <div class="<?= $bay_class ?>" data-id="disk<?= $i ?>" onclick="selectBay('disk<?= $i ?>')">
-                <div class="nas-bay-handle"></div>
-                <div class="nas-bay-led" id="led-indicator-disk<?= $i ?>" style="background: <?= $led_bg ?>; box-shadow: <?= $led_shadow ?>;"></div>
-            </div>
-            <?php endfor; ?>
+            
+            <div class="nas-logo">DXP4800 GT</div>
         </div>
     </div>
 </div>
@@ -523,10 +613,9 @@ function selectBay(bayId) {
         el.style.display = 'none';
     });
     
-    var selectedBay = document.querySelector('.interactive-led[data-id="' + bayId + '"]');
-    if (selectedBay) {
-        selectedBay.classList.add('active-element');
-    }
+    document.querySelectorAll('.interactive-led[data-id="' + bayId + '"]').forEach(function(el) {
+        el.classList.add('active-element');
+    });
     
     var settingsPanel = document.getElementById('bay-settings-' + bayId);
     if (settingsPanel) {
