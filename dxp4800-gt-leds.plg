@@ -2,19 +2,23 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "dxp4800-gt-leds">
 <!ENTITY author    "TheMysticle">
-<!ENTITY version   "2026.08.22">
+<!ENTITY version   "2026.08.23">
 <!ENTITY launch    "Settings/dxp4800-gt-leds">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/master/dxp4800-gt-leds.plg">
 <!ENTITY sourceURL "https://raw.githubusercontent.com/TheMysticle/dxp4800-gt-leds/master/source">
 ]>
 
-<PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" icon="lightbulb-o" min="6.9.0">
+<PLUGIN name="Ugreen NAS LED Controller" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" icon="lightbulb-o" min="6.9.0">
 
 <DESCRIPTION>
 A fully featured LED controller for the UGREEN DXP4800 GT NAS. Supports custom RGB colors, brightness, per-bay drive tracking, network monitoring, and a local Home Assistant API.
 </DESCRIPTION>
 
 <CHANGES>
+###2026.08.23
+- Renamed plugin to Ugreen NAS LED Controller
+- Added description to UI settings page
+
 ###2026.08.22
 - Added visual indicator in UI for populated drive bays
 - Added Network LED direction (Tx/Rx) and Invert settings

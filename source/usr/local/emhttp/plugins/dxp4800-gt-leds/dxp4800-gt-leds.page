@@ -1,7 +1,9 @@
 Menu="Utilities"
 Icon="lightbulb-o"
-Title="UGREEN DXP4800 GT LEDs"
+Title="Ugreen NAS LED Controller"
 ---
+<p style="margin-bottom: 20px;">A fully featured LED controller for the UGREEN DXP4800 GT NAS. Supports custom RGB colors, brightness, per-bay drive tracking, network monitoring, and a local Home Assistant API.</p>
+
 <?php
 $cfgFile = '/boot/config/plugins/dxp4800-gt-leds/settings.cfg';
 $cfgDir = dirname($cfgFile);
